@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Fill the Future is a short clean-water awareness game inspired by charity: water.">
+  <title>Fill the Future | Clean Water Game</title>
+  <style>
+    :root {
+      --yellow: #ffc700;
+      --yellow-dark: #c89c00;
+      --teal: #00a19d;
+      --teal-dark: #07575e;
+      --teal-soft: #dff6f4;
+      --ink: #142a2d;
+      --muted: #536c70;
+      --paper: #fffdf7;
+      --white: #ffffff;
+      --mud: #8a5a35;
+      --danger: #b9452f;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { color-scheme: light; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(255, 199, 0, .18), transparent 28rem),
+        linear-gradient(160deg, #f7ffff 0%, #e6f7f6 58%, #d3eeec 100%);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 24px;
+    }
+
+    button, a { font: inherit; }
+    button { touch-action: manipulation; }
+
+    .app-shell {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 14px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -.03em;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 40px;
+      border-radius: 5px 5px 9px 9px;
+      background: var(--yellow);
+      color: var(--ink);
+      font-size: .63rem;
+      font-weight: 900;
+      letter-spacing: .04em;
+    }
+
+    .brand-note {
+      color: var(--muted);
+      font-size: .9rem;
+      text-align: right;
+    }
+
+    .game-frame {
+      position: relative;
+      overflow: hidden;
+      border: 3px solid var(--ink);
+      border-radius: 22px;
+      background: var(--paper);
+      box-shadow: 0 24px 70px rgba(7, 87, 94, .18);
+    }
+
+    .screen { min-height: clamp(560px, 74vh, 760px); }
+    .screen[hidden] { display: none; }
+
+    .start-screen {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(320px, .92fr);
+      align-items: stretch;
+    }
+
+    .start-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(34px, 6vw, 78px);
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--teal-dark);
+      font-size: .78rem;
+      font-weight: 900;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--teal-dark);
+      font-size: clamp(3.4rem, 8vw, 6.8rem);
+      line-height: .86;
+      letter-spacing: -.07em;
+      text-transform: uppercase;
+    }
+
+    .intro {
+      max-width: 38rem;
+      margin: 24px 0 0;
+      font-size: clamp(1.05rem, 2vw, 1.3rem);
+      line-height: 1.55;
+    }
+
+    .start-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .primary-button,
+    .secondary-button,
+    .impact-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-weight: 900;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .primary-button {
+      border: 2px solid var(--ink);
+      background: var(--yellow);
+      color: var(--ink);
+      box-shadow: 0 5px 0 var(--yellow-dark);
+    }
+
+    .primary-button:hover { transform: translateY(-1px); }
+    .primary-button:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--yellow-dark); }
+
+    .secondary-button {
+      border: 2px solid rgba(20, 42, 45, .3);
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .controls-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px 22px;
+      margin: 27px 0 0;
+      padding: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: .92rem;
+      font-weight: 700;
+    }
+
+    kbd {
+      display: inline-block;
+      min-width: 27px;
+      margin-inline: 2px;
+      border: 1px solid rgba(20, 42, 45, .34);
+      border-bottom-width: 3px;
+      border-radius: 5px;
+      background: var(--white);
+      color: var(--ink);
+      padding: 2px 6px;
+      text-align: center;
+      font-family: inherit;
+    }
+
+    .start-art {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 560px;
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(255, 255, 255, .25), rgba(255, 255, 255, .25)),
+        repeating-linear-gradient(0deg, transparent 0 64px, rgba(7, 87, 94, .07) 65px 66px),
+        var(--teal-soft);
+    }
+
+    .preview-piece {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      width: clamp(160px, 21vw, 230px);
+      height: clamp(138px, 18vw, 198px);
+      border: 4px solid var(--ink);
+      border-radius: 12px 12px 28px 28px;
+      background: var(--yellow);
+      color: var(--ink);
+      box-shadow: 14px 18px 0 rgba(7, 87, 94, .13);
+      font-size: clamp(1rem, 2vw, 1.35rem);
+      font-weight: 950;
+      letter-spacing: .08em;
+      text-align: center;
+    }
+
+    .preview-piece::before {
+      content: "PLAYER";
+      position: absolute;
+      top: -34px;
+      color: var(--teal-dark);
+      font-size: .75rem;
+      letter-spacing: .12em;
+    }
+
+    .preview-token {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      width: 76px;
+      aspect-ratio: 1;
+      border: 3px solid var(--ink);
+      border-radius: 50%;
+      background: var(--teal);
+      color: var(--white);
+      font-size: .78rem;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.05;
+    }
+
+    .preview-token.one { top: 11%; left: 16%; }
+    .preview-token.two { top: 26%; right: 13%; transform: scale(.78); }
+    .preview-token.three { bottom: 11%; left: 14%; transform: scale(.9); }
+
+    .game-screen { background: var(--teal-soft); }
+
+    .hud {
+      display: grid;
+      grid-template-columns: 1fr minmax(250px, 1.8fr) 1fr auto;
+      gap: 18px;
+      align-items: center;
+      min-height: 78px;
+      padding: 12px 18px;
+      background: var(--ink);
+      color: var(--white);
+    }
+
+    .hud-stat { font-size: .78rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+    .hud-stat strong { display: block; margin-top: 2px; color: var(--yellow); font-size: 1.35rem; letter-spacing: 0; }
+
+    .tank-copy {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 7px;
+      font-size: .82rem;
+      font-weight: 800;
+    }
+
+    .progress-track {
+      height: 13px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .18);
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: var(--yellow);
+      transition: width .2s ease;
+    }
+
+    .quit-button {
+      min-height: 42px;
+      border: 1px solid rgba(255, 255, 255, .35);
+      border-radius: 7px;
+      background: transparent;
+      color: var(--white);
+      padding: 8px 13px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .game-stage {
+      position: relative;
+      height: clamp(480px, 65vh, 650px);
+      overflow: hidden;
+      user-select: none;
+      touch-action: none;
+      background:
+        linear-gradient(to bottom, rgba(255, 255, 255, .48), transparent 42%),
+        repeating-linear-gradient(0deg, transparent 0 78px, rgba(7, 87, 94, .055) 79px 80px);
+    }
+
+    .stage-hint {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      z-index: 2;
+      transform: translateX(-50%);
+      width: min(680px, calc(100% - 32px));
+      border: 2px solid rgba(7, 87, 94, .23);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .94);
+      color: var(--teal-dark);
+      padding: 10px 14px;
+      text-align: center;
+      font-size: .95rem;
+      font-weight: 800;
+      box-shadow: 0 8px 26px rgba(7, 87, 94, .1);
+      transition: opacity .2s ease, transform .2s ease;
+      pointer-events: none;
+    }
+
+    .stage-hint.is-hidden { opacity: 0; transform: translate(-50%, -8px); }
+
+    .game-item {
+      position: absolute;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      width: 68px;
+      aspect-ratio: 1;
+      border: 3px solid var(--ink);
+      border-radius: 50%;
+      color: var(--white);
+      font-size: .68rem;
+      font-weight: 950;
+      line-height: 1.05;
+      text-align: center;
+      letter-spacing: .02em;
+      will-change: transform;
+    }
+
+    .game-item.clean { background: var(--teal); }
+    .game-item.pollutant { background: var(--mud); }
+
+    .player-piece {
+      position: absolute;
+      z-index: 3;
+      bottom: 18px;
+      left: 50%;
+      display: grid;
+      place-items: center;
+      width: 116px;
+      height: 86px;
+      transform: translateX(-50%);
+      border: 4px solid var(--ink);
+      border-radius: 10px 10px 22px 22px;
+      background: var(--yellow);
+      color: var(--ink);
+      font-size: .72rem;
+      font-weight: 950;
+      letter-spacing: .06em;
+      box-shadow: 0 9px 0 rgba(7, 87, 94, .14);
+      will-change: left;
+    }
+
+    .water-line {
+      position: absolute;
+      inset: auto 0 0;
+      height: 12px;
+      background: var(--teal);
+      opacity: .24;
+    }
+
+    .score-pop {
+      position: absolute;
+      z-index: 5;
+      color: var(--teal-dark);
+      font-size: 1.1rem;
+      font-weight: 950;
+      animation: pop-up .65s ease forwards;
+      pointer-events: none;
+    }
+
+    .score-pop.bad { color: var(--danger); }
+
+    @keyframes pop-up {
+      from { opacity: 0; transform: translateY(5px) scale(.9); }
+      30% { opacity: 1; }
+      to { opacity: 0; transform: translateY(-40px) scale(1.05); }
+    }
+
+    .game-stage.bad-hit { animation: bad-hit .28s ease; }
+    @keyframes bad-hit {
+      0%, 100% { background-color: transparent; transform: translateX(0); }
+      25% { background-color: rgba(185, 69, 47, .16); transform: translateX(-5px); }
+      60% { transform: translateX(5px); }
+    }
+
+    .end-screen {
+      display: grid;
+      place-items: center;
+      padding: clamp(28px, 6vw, 72px);
+      background:
+        linear-gradient(rgba(0, 161, 157, .94), rgba(0, 132, 129, .98)),
+        var(--teal);
+      color: var(--white);
+      text-align: center;
+    }
+
+    .end-content { width: min(680px, 100%); }
+
+    .end-screen .eyebrow { color: var(--yellow); }
+
+    .end-screen h2 {
+      margin: 0;
+      color: var(--white);
+      font-size: clamp(2.7rem, 7vw, 5.8rem);
+      line-height: .95;
+      letter-spacing: -.055em;
+      text-transform: uppercase;
+    }
+
+    .final-score {
+      margin: 18px 0 0;
+      color: var(--yellow);
+      font-size: 2.1rem;
+      font-weight: 950;
+    }
+
+    .end-message {
+      margin: 18px auto 0;
+      font-size: 1.08rem;
+      line-height: 1.55;
+    }
+
+    .impact-fact {
+      margin: 24px auto 0;
+      border-left: 5px solid var(--yellow);
+      background: rgba(255, 255, 255, .12);
+      padding: 16px 18px;
+      text-align: left;
+      line-height: 1.45;
+    }
+
+    .end-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 26px;
+      flex-wrap: wrap;
+    }
+
+    .impact-link {
+      border: 2px solid var(--white);
+      background: var(--white);
+      color: var(--teal-dark);
+    }
+
+    .end-note {
+      margin: 22px 0 0;
+      color: rgba(255, 255, 255, .82);
+      font-size: .83rem;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    :focus-visible { outline: 4px solid #005fcc; outline-offset: 3px; }
+
+    @media (max-width: 760px) {
+      body { padding: 12px; }
+      .brand-note { display: none; }
+      .game-frame { border-radius: 16px; }
+      .screen { min-height: 690px; }
+      .start-screen { grid-template-columns: 1fr; }
+      .start-copy { padding: 36px 24px 28px; }
+      .start-art { min-height: 300px; }
+      .preview-piece { width: 150px; height: 128px; }
+      .preview-token { width: 58px; }
+      .hud { grid-template-columns: 1fr 1fr auto; gap: 10px; }
+      .hud .tank { grid-column: 1 / -1; grid-row: 2; }
+      .quit-button { grid-column: 3; grid-row: 1; }
+      .game-stage { height: 560px; }
+      .game-item { width: 58px; font-size: .61rem; }
+      .player-piece { width: 98px; height: 76px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <div class="brand-row">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">CW</span><span>charity: water</span></div>
+      <div class="brand-note">Every clean drop moves the mission forward.</div>
+    </div>
+
+    <section class="game-frame" aria-label="Fill the Future clean-water game">
+      <div id="start-screen" class="screen start-screen">
+        <div class="start-copy">
+          <p class="eyebrow">A clean-water collection game</p>
+          <h1>Fill the<br>Future</h1>
+          <p class="intro">Catch clean water. Avoid pollution. Fill the community tank before time runs out.</p>
+          <div class="start-actions">
+            <button id="start-button" class="primary-button" type="button">Start mission</button>
+          </div>
+          <ul class="controls-list" aria-label="Game controls">
+            <li><kbd>←</kbd><kbd>→</kbd> or <kbd>A</kbd><kbd>D</kbd></li>
+            <li>Drag on mobile</li>
+            <li>45-second round</li>
+          </ul>
+        </div>
+        <div class="start-art" aria-label="Preview of clean-water game pieces">
+          <div class="preview-token one" aria-hidden="true">CLEAN<br>+10</div>
+          <div class="preview-token two" aria-hidden="true">CLEAN<br>+10</div>
+          <div class="preview-token three" aria-hidden="true">CLEAN<br>+10</div>
+          <div class="preview-piece" aria-hidden="true">YELLOW<br>JERRY CAN</div>
+        </div>
+      </div>
+
+      <div id="game-screen" class="screen game-screen" hidden>
+        <div class="hud">
+          <div class="hud-stat">Score<strong id="score">0</strong></div>
+          <div class="tank">
+            <div class="tank-copy"><span>Community tank</span><span id="progress-label">0%</span></div>
+            <div id="progress-track" class="progress-track" role="progressbar" aria-label="Community tank progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div id="progress-fill" class="progress-fill"></div>
+            </div>
+          </div>
+          <div class="hud-stat">Time<strong><span id="timer">45</span>s</strong></div>
+          <button id="quit-button" class="quit-button" type="button">End round</button>
+        </div>
+        <div id="game-stage" class="game-stage" aria-label="Game area. Move the yellow Jerry Can to catch clean-water tokens and avoid pollutants.">
+          <div id="stage-hint" class="stage-hint" aria-live="polite">Catch teal CLEAN tokens. Avoid brown POLLUTANT tokens.</div>
+          <div id="player" class="player-piece">JERRY CAN</div>
+          <div class="water-line" aria-hidden="true"></div>
+        </div>
+        <div id="announcer" class="sr-only" aria-live="polite"></div>
+      </div>
+
+      <div id="end-screen" class="screen end-screen" hidden>
+        <div class="end-content">
+          <p class="eyebrow">Round complete</p>
+          <h2 id="rank">Water Advocate</h2>
+          <p class="final-score"><span id="final-score">0</span> points</p>
+          <p id="end-message" class="end-message">You helped fill the community tank.</p>
+          <div class="impact-fact"><strong>Real-world impact:</strong> 100% of public donations go directly to water projects.</div>
+          <div class="end-actions">
+            <button id="replay-button" class="primary-button" type="button">Play again</button>
+            <a class="impact-link" href="https://www.charitywater.org/" target="_blank" rel="noopener noreferrer">Learn more &amp; donate</a>
+          </div>
+          <p class="end-note">Your score is symbolic. Learning, sharing, and donating create real-world impact.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const ROUND_SECONDS = 45;
+      const CLEAN_PROGRESS = 4;
+      const CLEAN_POINTS = 10;
+      const POLLUTANT_PENALTY = 15;
+      const STREAK_TARGET = 5;
+      const STREAK_BONUS = 20;
+
+      const startScreen = document.getElementById('start-screen');
+      const gameScreen = document.getElementById('game-screen');
+      const endScreen = document.getElementById('end-screen');
+      const stage = document.getElementById('game-stage');
+      const player = document.getElementById('player');
+      const scoreEl = document.getElementById('score');
+      const timerEl = document.getElementById('timer');
+      const progressEl = document.getElementById('progress-fill');
+      const progressLabel = document.getElementById('progress-label');
+      const progressTrack = document.getElementById('progress-track');
+      const hint = document.getElementById('stage-hint');
+      const announcer = document.getElementById('announcer');
+      const finalScore = document.getElementById('final-score');
+      const rankEl = document.getElementById('rank');
+      const endMessage = document.getElementById('end-message');
+
+      let state = 'start';
+      let score = 0;
+      let cleanCount = 0;
+      let streak = 0;
+      let timeLeft = ROUND_SECONDS;
+      let playerX = 0;
+      let keys = { left: false, right: false };
+      let items = [];
+      let animationId = null;
+      let startTime = 0;
+      let lastFrame = 0;
+      let lastSpawn = 0;
+      let hintTimer = null;
+      let milestone50 = false;
+
+      const setScreen = (next) => {
+        state = next;
+        startScreen.hidden = next !== 'start';
+        gameScreen.hidden = next !== 'playing';
+        endScreen.hidden = next !== 'ended';
+      };
+
+      const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+      const stageSize = () => ({ width: stage.clientWidth, height: stage.clientHeight });
+
+      const setPlayerX = (nextX) => {
+        const { width } = stageSize();
+        const half = player.offsetWidth / 2;
+        playerX = clamp(nextX, half + 4, width - half - 4);
+        player.style.left = `${playerX}px`;
+      };
+
+      const updateHud = () => {
+        const progress = Math.min(100, cleanCount * CLEAN_PROGRESS);
+        scoreEl.textContent = String(score);
+        timerEl.textContent = String(Math.max(0, timeLeft));
+        progressEl.style.width = `${progress}%`;
+        progressLabel.textContent = `${progress}%`;
+        progressTrack.setAttribute('aria-valuenow', String(progress));
+      };
+
+      const showHint = (message, duration = 1800) => {
+        window.clearTimeout(hintTimer);
+        hint.textContent = message;
+        hint.classList.remove('is-hidden');
+        announcer.textContent = message;
+        hintTimer = window.setTimeout(() => hint.classList.add('is-hidden'), duration);
+      };
+
+      const clearItems = () => {
+        items.forEach(item => item.element.remove());
+        items = [];
+        stage.querySelectorAll('.score-pop').forEach(pop => pop.remove());
+      };
+
+      const spawnItem = (elapsed) => {
+        const { width } = stageSize();
+        const clean = Math.random() < .74;
+        const element = document.createElement('div');
+        element.className = `game-item ${clean ? 'clean' : 'pollutant'}`;
+        element.textContent = clean ? 'CLEAN +10' : 'POLLUTANT −15';
+        element.setAttribute('aria-hidden', 'true');
+        stage.appendChild(element);
+
+        const size = element.offsetWidth;
+        const x = 8 + Math.random() * Math.max(1, width - size - 16);
+        const difficulty = Math.min(90, elapsed * 1.8);
+        items.push({
+          element,
+          clean,
+          x,
+          y: -size,
+          size,
+          speed: 125 + Math.random() * 45 + difficulty
+        });
+      };
+
+      const popScore = (text, x, y, bad = false) => {
+        const pop = document.createElement('div');
+        pop.className = `score-pop${bad ? ' bad' : ''}`;
+        pop.textContent = text;
+        pop.style.left = `${x}px`;
+        pop.style.top = `${y}px`;
+        stage.appendChild(pop);
+        window.setTimeout(() => pop.remove(), 700);
+      };
+
+      const handleCatch = (item) => {
+        if (item.clean) {
+          cleanCount += 1;
+          streak += 1;
+          score += CLEAN_POINTS;
+          let message = 'Clean catch! +10';
+          if (streak % STREAK_TARGET === 0) {
+            score += STREAK_BONUS;
+            message = `Clean streak! +${CLEAN_POINTS + STREAK_BONUS}`;
+          }
+          popScore(`+${streak % STREAK_TARGET === 0 ? CLEAN_POINTS + STREAK_BONUS : CLEAN_POINTS}`, item.x, item.y);
+          if (!milestone50 && cleanCount * CLEAN_PROGRESS >= 50) {
+            milestone50 = true;
+            showHint('Milestone: Clean water supports health, education, and opportunity.', 2600);
+          } else {
+            showHint(message, 800);
+          }
+          if (cleanCount * CLEAN_PROGRESS >= 100) {
+            updateHud();
+            endGame(true);
+            return;
+          }
+        } else {
+          score = Math.max(0, score - POLLUTANT_PENALTY);
+          streak = 0;
+          popScore('−15', item.x, item.y, true);
+          stage.classList.remove('bad-hit');
+          void stage.offsetWidth;
+          stage.classList.add('bad-hit');
+          showHint('Pollutant caught. Keep the clean-water streak going!', 1100);
+        }
+        updateHud();
+      };
+
+      const intersects = (item) => {
+        const itemLeft = item.x;
+        const itemRight = item.x + item.size;
+        const itemTop = item.y;
+        const itemBottom = item.y + item.size;
+        const playerLeft = playerX - player.offsetWidth / 2;
+        const playerRight = playerX + player.offsetWidth / 2;
+        const playerTop = stage.clientHeight - 18 - player.offsetHeight;
+        const playerBottom = stage.clientHeight - 18;
+        return itemRight > playerLeft && itemLeft < playerRight && itemBottom > playerTop && itemTop < playerBottom;
+      };
+
+      const frame = (now) => {
+        if (state !== 'playing') return;
+        const dt = Math.min(.035, (now - lastFrame) / 1000 || 0);
+        lastFrame = now;
+        const elapsed = (now - startTime) / 1000;
+        timeLeft = Math.ceil(ROUND_SECONDS - elapsed);
+
+        const { width, height } = stageSize();
+        const playerSpeed = Math.max(330, width * .48);
+        if (keys.left) setPlayerX(playerX - playerSpeed * dt);
+        if (keys.right) setPlayerX(playerX + playerSpeed * dt);
+
+        const spawnEvery = Math.max(430, 760 - elapsed * 4.5);
+        if (now - lastSpawn >= spawnEvery) {
+          spawnItem(elapsed);
+          lastSpawn = now;
+        }
+
+        const remaining = [];
+        for (const item of items) {
+          item.y += item.speed * dt;
+          item.element.style.transform = `translate(${item.x}px, ${item.y}px)`;
+          if (intersects(item)) {
+            handleCatch(item);
+            item.element.remove();
+          } else if (item.y < height + item.size) {
+            remaining.push(item);
+          } else {
+            item.element.remove();
+          }
+        }
+        items = remaining;
+        updateHud();
+
+        if (timeLeft <= 0) {
+          endGame(false);
+          return;
+        }
+        animationId = requestAnimationFrame(frame);
+      };
+
+      const startGame = () => {
+        cancelAnimationFrame(animationId);
+        clearItems();
+        score = 0;
+        cleanCount = 0;
+        streak = 0;
+        timeLeft = ROUND_SECONDS;
+        milestone50 = false;
+        keys = { left: false, right: false };
+        setScreen('playing');
+        setPlayerX(stage.clientWidth / 2);
+        updateHud();
+        showHint('Catch teal CLEAN tokens. Avoid brown POLLUTANT tokens.', 2200);
+        startTime = performance.now();
+        lastFrame = startTime;
+        lastSpawn = startTime - 500;
+        animationId = requestAnimationFrame(frame);
+      };
+
+      const endGame = (tankFilled) => {
+        if (state !== 'playing') return;
+        cancelAnimationFrame(animationId);
+        state = 'ended';
+        clearItems();
+
+        const progress = Math.min(100, cleanCount * CLEAN_PROGRESS);
+        let rank = 'Keep the Water Flowing';
+        if (tankFilled || progress >= 100) rank = 'Clean Water Champion';
+        else if (score >= 180) rank = 'Water Advocate';
+
+        rankEl.textContent = rank;
+        finalScore.textContent = String(score);
+        endMessage.textContent = progress >= 100
+          ? 'You filled the community tank before time ran out.'
+          : `You filled ${progress}% of the community tank. Every clean catch moved the mission forward.`;
+        setScreen('ended');
+        document.getElementById('replay-button').focus();
+      };
+
+      document.getElementById('start-button').addEventListener('click', startGame);
+      document.getElementById('replay-button').addEventListener('click', startGame);
+      document.getElementById('quit-button').addEventListener('click', () => endGame(false));
+
+      window.addEventListener('keydown', event => {
+        if (state !== 'playing') return;
+        const key = event.key.toLowerCase();
+        if (key === 'arrowleft' || key === 'a') {
+          event.preventDefault();
+          keys.left = true;
+        }
+        if (key === 'arrowright' || key === 'd') {
+          event.preventDefault();
+          keys.right = true;
+        }
+      });
+
+      window.addEventListener('keyup', event => {
+        const key = event.key.toLowerCase();
+        if (key === 'arrowleft' || key === 'a') keys.left = false;
+        if (key === 'arrowright' || key === 'd') keys.right = false;
+      });
+
+      const pointerMove = event => {
+        if (state !== 'playing') return;
+        const rect = stage.getBoundingClientRect();
+        setPlayerX(event.clientX - rect.left);
+      };
+
+      stage.addEventListener('pointerdown', event => {
+        if (state !== 'playing') return;
+        stage.setPointerCapture(event.pointerId);
+        pointerMove(event);
+      });
+      stage.addEventListener('pointermove', event => {
+        if (state === 'playing' && stage.hasPointerCapture(event.pointerId)) pointerMove(event);
+      });
+
+      window.addEventListener('resize', () => {
+        if (state === 'playing') setPlayerX(playerX || stage.clientWidth / 2);
+      });
+    })();
+  </script>
+</body>
+</html>
